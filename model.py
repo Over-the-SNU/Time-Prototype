@@ -7,7 +7,7 @@ from datetime import date
 class Repeat(dataclass):
     day: int  # bit mask
     week_interval: int
-    due: datetime
+    due: date
 
 
 class Todo(dataclass):
