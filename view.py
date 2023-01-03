@@ -25,19 +25,19 @@ class ScheduleDetailView:
                 self.update()
             if choice == 2:
                 self.destroy()
+                break
             if choice == 3:
                 break
 
     def retrieve(self):
         obj = schedule_view_model.get_detail(self.id)
-        print(self.id, obj)
         if obj is None:
             print('해당 id를 가진 일정이 존재하지 않습니다.')
             return
 
         print(f'제목: {obj.name}')
-        print(f'시작 시간: {obj.from_time}')
-        print(f'종료 시간: {obj.to_time}')
+        print(f'시작 시간: {obj.from_time.strftime("%Y-%m-%d %H:%M")}')
+        print(f'종료 시간: {obj.to_time.strftime("%Y-%m-%d %H:%M")}')
 
         if obj.content:
             print(f'내용: {obj.content}')
@@ -47,7 +47,7 @@ class ScheduleDetailView:
             if obj.repeat.due is not None:
                 repeat_str += f'{obj.repeat.due}까지 '
             repeat_str += '매주 ' if obj.repeat.week_interval == 1 else f'{obj.repeat.week_interval}주 '
-            repeat_str += ','.join(day for i, day in enumerate(day_str) if 1 << i & obj.repeat.day)
+            repeat_str += ', '.join(day for i, day in enumerate(day_str) if 1 << i & obj.repeat.day)
             print(repeat_str)
 
         if obj.importance:
@@ -67,9 +67,9 @@ class ScheduleDetailView:
             schedule_view_model.update(self.id, name=name)
 
         if choice == 2:
-            from_time = datetime.strptime(input('새 시작 시간 (yyyy-mm-dd HH:MM:SS): '), '%Y-%m-%d %H:%M:%S')
-            to_time = datetime.strptime(input('새 종료 시간 (yyyy-mm-dd HH:MM:SS): '), '%Y-%m-%d %H:%M:%S')
-            schedule_view_model.update(self.id, from_time=from_time, to=to_time)
+            from_time = datetime.strptime(input('새 시작 시간 (yyyy-mm-dd HH:MM): '), '%Y-%m-%d %H:%M')
+            to_time = datetime.strptime(input('새 종료 시간 (yyyy-mm-dd HH:MM): '), '%Y-%m-%d %H:%M')
+            schedule_view_model.update(self.id, from_time=from_time, to_time=to_time)
 
         if choice == 3:
             content = input('새 내용: ')
