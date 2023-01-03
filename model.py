@@ -1,6 +1,6 @@
 import sqlite3
 from abc import *
-from typing import ClassVar, List
+from typing import ClassVar, List, Optional
 from dataclasses import dataclass
 from datetime import datetime
 from datetime import date
@@ -215,13 +215,15 @@ class ScheduleManager(Manager):
                 SELECT Schedules.ScheduleID, Schedules.ScheduleName, Schedules.FromTime, Schedules.ToTime,
                  Schedules.Importance, Schedules.Content, ScheduleRepeats.Days,
                  ScheduleRepeats.WeekInterval, ScheduleRepeats.DueDate
-                 FROM Calendars
-                LEFT JOIN ScheduleRepeats ON Schedules.CalendarID = ScheduleRepeats.CalendarID
+                 FROM Schedules
+                LEFT JOIN ScheduleRepeats ON Schedules.ScheduleID = ScheduleRepeats.ScheduleID
                 WHERE Schedules.ScheduleID = {id}
                 """).fetchall()
 
         if not item:
             raise ValueError("ID NOT EXIST")
+
+        item = item[0]
 
         r = Repeat(day=item[6], week_interval=item[7], due=item[8]) if item[6] is not None else None
 
@@ -247,7 +249,7 @@ class ScheduleManager(Manager):
     def update(self, id, obj) -> None:
         self.cursor.execute(f"""
                 UPDATE Schedules
-                SET SchedulesName='{obj.name}',
+                SET ScheduleName='{obj.name}',
                 FromTime='{obj.from_time.strftime("%Y-%m-%d %H:%M:%S")}',
                 ToTime='{obj.to_time.strftime("%Y-%m-%d %H:%M:%S")}',
                 Importance={obj.importance},
@@ -305,11 +307,11 @@ class Todo:
     id: int
     name: str
     done: bool
-    progress: int
     date: date
-    repeat: Repeat
-    importance: int
-    content: str
+    progress: Optional[int] = 0
+    repeat: Optional[Repeat] = None
+    importance: Optional[int] = 0
+    content: Optional[str] = ''
 
 
 @dataclass
@@ -319,6 +321,6 @@ class Schedule:
     name: str
     from_time: datetime
     to_time: datetime
-    repeat: Repeat
-    importance: int
-    content: str
+    repeat: Optional[Repeat] = None
+    importance: Optional[int] = 0
+    content: Optional[str] = ''
