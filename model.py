@@ -216,8 +216,8 @@ class ScheduleManager(Manager):
                 SELECT Schedules.ScheduleID, Schedules.ScheduleName, Schedules.FromTime, Schedules.ToTime,
                  Schedules.Importance, Schedules.Content, ScheduleRepeats.Days,
                  ScheduleRepeats.WeekInterval, ScheduleRepeats.DueDate
-                 FROM Calendars
-                LEFT JOIN ScheduleRepeats ON Schedules.CalendarID = ScheduleRepeats.CalendarID
+                 FROM Schedules
+                LEFT JOIN ScheduleRepeats ON Schedules.ScheduleID = ScheduleRepeats.ScheduleID
                 WHERE Schedules.ScheduleID = {id}
                 """).fetchall()
 
