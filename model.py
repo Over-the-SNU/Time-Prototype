@@ -258,7 +258,7 @@ class ScheduleManager(Manager):
 
         r = self.cursor.execute(f"""
                 SELECT * FROM ScheduleRepeats
-                WHERE TodoID={id};
+                WHERE ScheduleID={id};
                 """).fetchone()
 
         if obj.repeat:
@@ -279,16 +279,16 @@ class ScheduleManager(Manager):
             self.connection.commit()
         elif r:
             self.cursor.execute(f"""
-                    DELETE FROM ScheduleRepeats WHERE TodoID={id}
+                    DELETE FROM ScheduleRepeats WHERE ScheduleID={id}
                     """)
             self.connection.commit()
 
     def delete(self, id) -> None:
         self.cursor.execute(f"""
-        DELETE FROM Schedules WHERE TodoID={id}
+        DELETE FROM Schedules WHERE ScheduleID={id}
         """)
         self.cursor.execute(f"""
-        DELETE FROM ScheduleRepeats WHERE TodoID={id}
+        DELETE FROM ScheduleRepeats WHERE ScheduleID={id}
         """)
 
 
