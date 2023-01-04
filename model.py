@@ -79,7 +79,7 @@ class TodoManager(Manager):
 
         ret = []
         for item in result:
-            r = Repeat(day=item[7], week_interval=item[8], due=item[9]) if item[7] is not None else None
+            r = Repeat(day=item[7], week_interval=item[8], due=datetime.strptime(item[9], "%Y-%m-%d").date()) if item[7] is not None else None
             ret.append(Todo(id=item[0], name=item[1], done=item[2] != 0, progress=item[3],
                             date=datetime.strptime(item[4], "%Y-%m-%d").date(),
                             repeat=r, importance=item[5], content=item[6]))
@@ -98,7 +98,7 @@ class TodoManager(Manager):
         if not result:
             raise ValueError("ID NOT EXIST")
 
-        r = Repeat(day=result[7], week_interval=result[8], due=result[9]) if result[7] is not None else None
+        r = Repeat(day=result[7], week_interval=result[8], due=datetime.strptime(result[9], "%Y-%m-%d").date()) if result[7] is not None else None
         return Todo(id=result[0], name=result[1], done=result[2] != 0, progress=result[3],
                     date=datetime.strptime(result[4], "%Y-%m-%d").date(),
                     repeat=r, importance=result[5], content=result[6])
@@ -249,7 +249,7 @@ class ScheduleManager(Manager):
 
         ret = []
         for item in result:
-            r = Repeat(day=item[6], week_interval=item[7], due=item[8]) if item[6] is not None else None
+            r = Repeat(day=item[6], week_interval=item[7], due=datetime.strptime(item[8], "%Y-%m-%d").date()) if item[6] is not None else None
             ret.append(
                 Schedule(id=item[0], name=item[1], from_time=datetime.strptime(item[2], "%Y-%m-%d %H:%M:%S"),
                          to_time=datetime.strptime(item[3], "%Y-%m-%d %H:%M:%S"), repeat=r, importance=item[4],
@@ -271,7 +271,7 @@ class ScheduleManager(Manager):
 
         item = item[0]
 
-        r = Repeat(day=item[6], week_interval=item[7], due=item[8]) if item[6] is not None else None
+        r = Repeat(day=item[6], week_interval=item[7], due=datetime.strptime(item[8], "%Y-%m-%d").date()) if item[6] is not None else None
 
         return Schedule(id=item[0], name=item[1], from_time=datetime.strptime(item[2], "%Y-%m-%d %H:%M:%S"),
                         to_time=datetime.strptime(item[3], "%Y-%m-%d %H:%M:%S"), repeat=r, importance=item[4],
