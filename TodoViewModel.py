@@ -1,51 +1,63 @@
 from datetime import date
+from model import Todo
 
 class TodoViewModel:
-    def __init__(self, name, importance, done, progress, dueDate, repeat, content):
-        self.name = name
-        self.importance = importance
-        self.done = done
-        self.progress = progress
-        self.date = dueDate
-        self.repeat = repeat
-        self.content = content
-    def modify(self, place, content):
+    def __init__(self):# name, importance, done, progress, dueDate, repeat, content):
+        pass
+        # self.name = name
+        # self.importance = importance
+        # self.done = done
+        # self.progress = progress
+        # self.date = dueDate
+        # self.repeat = repeat
+        # self.content = content
+    def get(self, id):
+        Todo.objects.get(id)
+    def update(self, id, place, content):
+        obj = Todo.objects.get(id)
         if place == 1:
             if isinstance(content, str):
-                self.name = content
+                obj.name = content
+                Todo.objects.update(id, obj)
                 return True
             else:
                 return False
         elif place == 2:
             try:
-                self.importance = int(content)
+                obj.importance = int(content)
+                Todo.objects.update(id, obj)
                 return True
             except ValueError:
                 return False
         elif place == 3:
-            self.done = not self.done
+            obj.done = not obj.done
+            Todo.objects.update(id, obj)
         elif place == 4:
             try:
-                self.progress = int(content)
+                obj.progress = int(content)
+                Todo.objects.update(id, obj)
                 return True
             except ValueError:
                 return False
         elif place == 5:
             try:
-                self.date = date(content)
+                obj.date = date(content)
+                Todo.objects.update(id, obj)
                 return True
             except ValueError:
                 return False
         elif place == 6:
             if isinstance(content, str):
-                self.repeat = content
+                obj.repeat = content
+                Todo.objects.update(id, obj)
                 return True
             else:
                 return False
         elif place == 7:
-            self.content = content
+            obj.content = content
+            Todo.objects.update(id, obj)
             return True
         else:
             return False
-    def __del__(self):
-        pass
+    def __del__(self, id):
+        Todo.objects.delete(id)
