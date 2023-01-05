@@ -59,7 +59,7 @@ class TodoDetailView:
                                 print("완료됐습니다")
                             else:
                                 print("다시 입력해주세요")
-                        elif place <= 7:
+                        elif 0 < place <= 7:
                             content = input("내용을 입력하세요:")
                             editIsOK = viewModel.update(self.id, place, content)
                             if editIsOK:
