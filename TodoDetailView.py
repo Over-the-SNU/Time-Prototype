@@ -33,7 +33,17 @@ class TodoDetailView:
                         print(f"5. 시간: {viewModel.date}")
                         print(f"6. 반복: {viewModel.repeat}")
                         print(f"7. 메모: {viewModel.content}")
-                        place = int(input("편집할 위치를 정하세요(취소: 0):"))
+                        try:
+                            place = int(input("편집할 위치를 정하세요(취소: 0):"))
+                        except ValueError:
+                            placeIsOK = False
+                            while not placeIsOK:
+                                try:
+                                    place = int(input("편집할 위치를 다시 입력하세요(취소: 0):"))
+                                    placeIsOK = True
+                                except ValueError:
+                                    pass
+
                         if place == 0:
                             print("취소되었습니다.")
                             # actionSelectIsOK = True
