@@ -210,6 +210,7 @@ class TodoManager(Manager):
         self.cursor.execute(f"""
         DELETE FROM Todos WHERE TodoID={id}
         """)
+        self.connection.commit()
 
 
 class ScheduleManager(Manager):
@@ -390,6 +391,7 @@ class ScheduleManager(Manager):
         self.cursor.execute(f"""
         DELETE FROM ScheduleRepeats WHERE ScheduleID={id}
         """)
+        self.connection.commit()
 
 
 @dataclass
