@@ -367,7 +367,7 @@ class ScheduleManager(Manager):
 
         repeat = kwargs["repeat"] if "repeat" in kwargs else obj.repeat
 
-        if obj.repeat:
+        if repeat:
             if r:
                 self.cursor.execute(f"""
                         UPDATE ScheduleRepeats
