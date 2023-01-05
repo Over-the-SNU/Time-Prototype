@@ -17,9 +17,12 @@ class TodoViewModel:
         obj = Todo.objects.get(id)
         if place == 1:
             if isinstance(content, str):
-                obj.name = content
-                Todo.objects.update(id, obj)
-                return True
+                if content != "":
+                    obj.name = content
+                    Todo.objects.update(id, obj)
+                    return True
+                else:
+                    return False
             else:
                 return False
         elif place == 2:
