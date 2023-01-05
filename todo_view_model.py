@@ -1,5 +1,6 @@
 from model import Todo
 from constants import *
+import datetime
 
 
 class TodoViewModel():
@@ -17,6 +18,9 @@ class TodoViewModel():
 
         if obj.importance < 0:
             return CODE_INVALID_IMPORTANCE
+
+        if obj.repeat is not None and obj.repeat.due < obj.date:
+            return CODE_INVALID_DATE
 
         return CODE_SUCCESS
 

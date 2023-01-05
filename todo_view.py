@@ -1,6 +1,7 @@
 from datetime import datetime
 from todo_view_model import TodoViewModel
 from model import Repeat
+from constants import *
 
 day_str = ['월', '화', '수', '목', '금', '토', '일']
 
@@ -62,9 +63,10 @@ class TodoListView:
             print(f'완료 여부: {obj.done}')
             print(f'진행도: {obj.progress}')
             print(f'중요도: {obj.importance}')
-            print(f'반복 날짜: {",".join(day for i, day in enumerate(day_str) if 1 << i & obj.repeat.day)}')
-            print(f'반복 주기(주): {obj.repeat.week_interval}')
-            print(f'만료 날짜: {obj.repeat.due.strftime("%Y-%m-%d")}')
+            if obj.repeat is not None:
+                print(f'반복 날짜: {",".join(day for i, day in enumerate(day_str) if 1 << i & obj.repeat.day)}')
+                print(f'반복 주기(주): {obj.repeat.week_interval}')
+                print(f'만료 날짜: {obj.repeat.due.strftime("%Y-%m-%d")}')
             print(f'내용: {obj.content}')
 
 
@@ -76,15 +78,14 @@ class TodoListView:
             return
         name = input('이름: ')
         content = input('내용: ')
-        has_repeat = bool(input('반복 여부(True/False): '))
+        has_repeat = input('반복 여부(True/False): ')
         repeat = None
-        if has_repeat:
+        if has_repeat == 'True':
             try:
                 day = sum(1 << day_str.index(d) for d in input('요일 (콤마로 구분): ').split(','))
             except ValueError:
                 print('잘못된 형식입니다.')
                 return
-
             try:
                 week_interval = int(input('반복 간격 (주): '))
             except:
@@ -107,7 +108,13 @@ class TodoListView:
         except:
             print("정수를 입력하세요.")
             return
-        self.viewmodel.create(date, name, content, repeat=repeat, done=False, progress=progress, importance=importance)
+        v = self.viewmodel.create(date, name, content, repeat=repeat, done=False, progress=progress, importance=importance)
+        if v == CODE_INVALID_DATE:
+            print('날짜가 잘못되었습니다.')
+        elif v == CODE_INVALID_PROGRESS:
+            print('진행도가 잘못되었습니다.')
+        elif v == CODE_INVALID_IMPORTANCE:
+            print('중요도가 잘못되었습니다.')
 
     def load(self):
 
