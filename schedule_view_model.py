@@ -12,7 +12,7 @@ def validate(**kwargs):
     except (ValueError, TypeError):
         return CODE_INVALID_ARGUMENTS
 
-    if obj.from_time > obj.to_time:
+    if obj.from_time > obj.to_time or obj.to_time > obj.repeat.due:
         return CODE_INVALID_DATE
 
     if not obj.name:
