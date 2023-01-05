@@ -50,7 +50,11 @@ class TodoViewModel:
             try:
                 day = int(content[0])
                 week_interval = int(content[1])
+                if week_interval <= 0:
+                    return False
                 due = datetime.strptime().date(content[2])
+                if due < obj.date:
+                    return False
                 obj.repeat = Repeat(day, week_interval, due)
                 Todo.objects.update(id, obj)
                 return True
