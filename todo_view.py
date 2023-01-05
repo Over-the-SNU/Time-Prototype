@@ -32,20 +32,29 @@ class TodoListView:
             self.printlist(done=(done == 'True'))
 
         if choice == 3:
-            progress = int(input('진행도: '))
-            self.printlist(progress=progress)
+            try:
+                progress = int(input('진행도: '))
+                self.printlist(progress=progress)
+            except:
+                print("정수를 입력하세요.")
 
         if choice == 4:
-            importance = int(input('중요도: '))
-            self.printlist(importance=importance)
+            try:
+                importance = int(input('중요도: '))
+                self.printlist(importance=importance)
+            except:
+                print("정수를 입력하세요.")
 
         if choice == 5:
             content = input('내용: ')
             self.printlist(content=content)
 
         if choice == 6:
-            date = datetime.strptime(input('날짜 (yyyy-mm-dd): '), '%Y-%m-%d').date()
-            self.printlist(date=date)
+            try:
+                date = datetime.strptime(input('날짜 (yyyy-mm-dd): '), '%Y-%m-%d').date()
+                self.printlist(date=date)
+            except ValueError:
+                print('잘못된 형식입니다.')
 
     def printlist(self, **kwargs):
         for obj in self.viewmodel.get_list(**kwargs):
@@ -60,19 +69,44 @@ class TodoListView:
 
 
     def create(self):
-        date = datetime.strptime(input('날짜 (yyyy-mm-dd): '), '%Y-%m-%d').date()
+        try:
+            date = datetime.strptime(input('날짜 (yyyy-mm-dd): '), '%Y-%m-%d').date()
+        except ValueError:
+            print('잘못된 형식입니다.')
+            return
         name = input('이름: ')
         content = input('내용: ')
         has_repeat = bool(input('반복 여부(True/False): '))
         repeat = None
         if has_repeat:
-            day = sum(1 << day_str.index(d) for d in input('요일 (콤마로 구분): ').split(','))
-            week_interval = int(input('반복 간격 (주): '))
-            due = datetime.strptime(input('만료 날짜 (yyyy-mm-dd): '), '%Y-%m-%d').date()
-            repeat = Repeat(day=day, week_interval=week_interval, due=due)
-        progress = int(input('진행도: '))
-        importance = int(input('중요도: '))
+            try:
+                day = sum(1 << day_str.index(d) for d in input('요일 (콤마로 구분): ').split(','))
+            except ValueError:
+                print('잘못된 형식입니다.')
+                return
 
+            try:
+                week_interval = int(input('반복 간격 (주): '))
+            except:
+                print("정수를 입력하세요.")
+                return
+            try:
+                due = datetime.strptime(input('만료 날짜 (yyyy-mm-dd): '), '%Y-%m-%d').date()
+            except:
+                print('잘못된 형식입니다.')
+                return
+            repeat = Repeat(day=day, week_interval=week_interval, due=due)
+
+        try:
+            progress = int(input('진행도: '))
+        except:
+            print("정수를 입력하세요.")
+            return
+        try:
+            importance = int(input('중요도: '))
+        except:
+            print("정수를 입력하세요.")
+            return
         self.viewmodel.create(date, name, content, repeat=repeat, done=False, progress=progress, importance=importance)
 
     def load(self):
