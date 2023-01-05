@@ -30,14 +30,22 @@ class CalenderView:
         name = input("name: ")
         from_str = input("from time(YYYY-mm-dd HH:MM:SS): ")
         to_str = input("to time(YYYY-mm-dd HH:MM:SS): ")
-        repeat_day = input("repeat day(in binary, from sun~mon): ")
-        interval = input("repeat interval(week): ")
-        due = input("repeat due(YYYY-mm-dd): ")
+        r = input("repeat? (yes:1 no:else): ")
+        repeat = False
+        if r == "1":
+            repeat_day = input("repeat day(in binary, from sun~mon): ")
+            interval = input("repeat interval(week): ")
+            due = input("repeat due(YYYY-mm-dd): ")
+            repeat = True
+        else:
+            repeat_day = ''
+            interval = ''
+            due = ''
         importance = input("importance: ")
         content = input("content: ")
 
         try:
-            self.viewmodel.create_schedule(name=name, from_str=from_str, to_str=to_str, repeat_day=repeat_day, interval=interval, due=due,
+            self.viewmodel.create_schedule(name=name, from_str=from_str, to_str=to_str, repeat=repeat, repeat_day=repeat_day, interval=interval, due=due,
                                            importance=importance, content=content)
             print("Successfully created: {0}".format(name))
         except InvalidScheduleError:

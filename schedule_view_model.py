@@ -83,7 +83,10 @@ class CalenderViewModel:
         if self.is_valid(**kwargs):
             from_time = datetime.datetime.strptime(kwargs['from_str'], "%Y-%m-%d %H:%M:%S")
             to_time = datetime.datetime.strptime(kwargs['to_str'], "%Y-%m-%d %H:%M:%S")
-            repeat = Repeat(int(kwargs['repeat_day'], 2), int(kwargs['interval']), datetime.datetime.strptime(kwargs['due'], "%Y-%m-%d").date())
+            if kwargs['repeat'] == True:
+                repeat = Repeat(int(kwargs['repeat_day'], 2), int(kwargs['interval']), datetime.datetime.strptime(kwargs['due'], "%Y-%m-%d").date())
+            else:
+                repeat = None
             Schedule.objects.create(Schedule(id=0, name=kwargs['name'],from_time=from_time, to_time=to_time, repeat=repeat,
                                              importance=kwargs['importance'], content=kwargs['content']))
         else:
@@ -97,15 +100,16 @@ class CalenderViewModel:
             to_time = datetime.datetime.strptime(kwargs['to_str'], "%Y-%m-%d %H:%M:%S")
             if from_time > to_time:
                 return False
-            repeat_day = int(kwargs['repeat_day'], 2)
-            if repeat_day < 0b0000001 or repeat_day > 0b1000000:
-                return False
-            interval = int(kwargs['interval'])
-            if interval <= 0:
-                return False
-            due = datetime.datetime.strptime(kwargs['due'], "%Y-%m-%d").date()
-            if due < to_time.date():
-                return False
+            if kwargs['repeat'] == True:
+                repeat_day = int(kwargs['repeat_day'], 2)
+                if repeat_day < 0b0000001 or repeat_day > 0b1000000:
+                    return False
+                interval = int(kwargs['interval'])
+                if interval <= 0:
+                    return False
+                due = datetime.datetime.strptime(kwargs['due'], "%Y-%m-%d").date()
+                if due < to_time.date():
+                    return False
             importance = int(kwargs['importance'])
             if importance < 0:
                 return False
