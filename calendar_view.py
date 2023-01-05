@@ -9,23 +9,27 @@ class CalenderView:
 
     def load(self):
         while True:
-            c = input("1: view calendar 2: exit")
+            c = input("1: view calendar 2: create calendar 3: exit")
             if c == '1':
                 try:
                     from_date = datetime.strptime(input("from time: "), "%Y-%m-%d %H:%M:%S").date()
                     to_date = datetime.strptime(input("to time: "), "%Y-%m-%d %H:%M:%S").date()
                     self.print_from_range(from_date, to_date)
-                except:
+                except ValueError:
                     print("Invalid input")
                     continue
-            else:
+            elif c == '2':
+                self.create_schedule()
+            elif c == '3':
                 break
+            else:
+                continue
 
 
     def create_schedule(self):
         name = input("name: ")
-        from_str = datetime.strptime(input("from time: "), "%Y-%m-%d %H:%M:%S")
-        to_str = datetime.strptime(input("to time: "), "%Y-%m-%d %H:%M:%S")
+        from_str = input("from time: ")
+        to_str = input("to time: ")
         interval = input("repeat interval: ")
         due = input("repeat due: ")
         importance = input("importance: ")
@@ -43,6 +47,6 @@ class CalenderView:
         entries += self.viewmodel.get_todos(from_date, to_date)
         entries.sort(key=lambda x: x.date)
         for entry in entries:
-            print(entry)
+            print(entry.string)
 
 

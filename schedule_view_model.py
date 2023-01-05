@@ -103,7 +103,7 @@ class CalenderViewModel:
             if importance < 0:
                 return False
 
-        except:
+        except ValueError:
             return False
 
     def get_schedules(self, from_date: date, to_date: date):
