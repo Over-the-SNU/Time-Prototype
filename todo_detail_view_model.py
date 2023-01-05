@@ -1,19 +1,10 @@
 import datetime
 from datetime import datetime
+
 from model import Todo, Repeat
 
 
 class TodoViewModel:
-    def __init__(self):# name, importance, done, progress, dueDate, repeat, content):
-        pass
-        # self.name = name
-        # self.importance = importance
-        # self.done = done
-        # self.progress = progress
-        # self.date = dueDate
-        # self.repeat = repeat
-        # self.content = content
-
     def get(self, id):
         return Todo.objects.get(id)
 

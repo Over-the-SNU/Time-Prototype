@@ -1,4 +1,4 @@
-from TodoViewModel import TodoViewModel
+from todo_detail_view_model import TodoViewModel
 
 
 class TodoDetailView:
@@ -71,7 +71,6 @@ class TodoDetailView:
                             edit_is_ok = self.viewModel.update(self.id, place, content)
                             if edit_is_ok:
                                 print("완료됐습니다")
-                                # self.loadView()
                                 action_select_is_ok = True
                             else:
                                 print("다시 입력해주세요")
@@ -86,23 +85,3 @@ class TodoDetailView:
                     reload = False
                 else:
                     print("다시 입력해주세요")
-
-# view = TodoDetailView(TodoViewModel("name", 1, True, 100, 0, 0, "f"))
-# view.loadView()
-
-# class Program:
-#     def __init__(self):
-#         self.view = TodoDetailView()
-#         self.suvView = []
-#
-#         self.done = False
-#     def main(self):
-#         while(not self.done):
-#             if len(self.suvView) == 0:
-#                 self.view.loadView()
-#             else:
-#                 self.suvView[-1].loadView()
-#
-# APP
-# Scene
-# ViewController

@@ -1,14 +1,14 @@
-from model import Todo
 from constants import *
-import datetime
+from model import Todo
 
 
-class TodoViewModel():
+class TodoViewModel:
 
     def __init__(self):
         pass
 
-    def validate(self, obj):
+    @staticmethod
+    def validate(obj):
 
         if obj.name == '':
             return CODE_TITLE_EMPTY
@@ -27,7 +27,6 @@ class TodoViewModel():
     def create(self, date, name, content, **kwargs):
 
         id = 0
-        # Todo: id 변경
         repeat = kwargs.get("repeat")
         done = kwargs.get("done")
         progress = kwargs.get("progress")
@@ -41,10 +40,10 @@ class TodoViewModel():
         else:
             return self.validate(obj)
 
-    def get_list(self, **kwargs):
-
-        l = []
+    @staticmethod
+    def get_list(**kwargs):
+        ls = []
         for obj in Todo.objects.all():
             if all(getattr(obj, attr) == value for attr, value in kwargs.items()):
-                l.append(obj)
-        return l
+                ls.append(obj)
+        return ls

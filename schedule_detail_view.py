@@ -1,9 +1,10 @@
-import schedule_view_model
-from datetime import datetime, timedelta
-from model import Schedule, Repeat
-from constants import *
+from datetime import datetime
 
-day_str = ['월', '화', '수', '목', '금', '토', '일']
+import schedule_view_model
+from constants import *
+from model import Schedule, Repeat
+
+DAY_STR = ('월', '화', '수', '목', '금', '토', '일')
 
 
 class ScheduleDetailView:
@@ -22,10 +23,10 @@ class ScheduleDetailView:
 
             if choice == 1:
                 self.update()
-            if choice == 2:
+            elif choice == 2:
                 self.destroy()
                 break
-            if choice == 3:
+            elif choice == 3:
                 break
 
             print()
@@ -48,7 +49,7 @@ class ScheduleDetailView:
             if obj.repeat.due is not None:
                 repeat_str += f'{obj.repeat.due}까지 '
             repeat_str += '매주 ' if obj.repeat.week_interval == 1 else f'{obj.repeat.week_interval}주 '
-            repeat_str += ', '.join(day for i, day in enumerate(day_str) if 1 << i & obj.repeat.day)
+            repeat_str += ', '.join(day for i, day in enumerate(DAY_STR) if 1 << i & obj.repeat.day)
             print(repeat_str)
 
         if obj.importance:
@@ -76,16 +77,16 @@ class ScheduleDetailView:
             name = input('새 제목: ')
             code = schedule_view_model.update(self.id, name=name)
 
-        if choice == 2:
+        elif choice == 2:
             from_time = datetime.strptime(input('새 시작 시간 (yyyy-mm-dd HH:MM): '), '%Y-%m-%d %H:%M')
             to_time = datetime.strptime(input('새 종료 시간 (yyyy-mm-dd HH:MM): '), '%Y-%m-%d %H:%M')
             code = schedule_view_model.update(self.id, from_time=from_time, to_time=to_time)
 
-        if choice == 3:
+        elif choice == 3:
             content = input('새 내용: ')
             code = schedule_view_model.update(self.id, content=content)
 
-        if choice == 4:
+        elif choice == 4:
             remove_repeat = False
             if obj.repeat:
                 print('기존 반복이 있습니다.')
@@ -98,12 +99,12 @@ class ScheduleDetailView:
                 code = schedule_view_model.update(self.id, repeat=None)
             else:
                 print('새 반복')
-                day = sum(1 << day_str.index(d) for d in input('요일 (콤마로 구분): ').split(','))
+                day = sum(1 << DAY_STR.index(d) for d in input('요일 (콤마로 구분): ').split(','))
                 week_interval = int(input('반복 간격 (주): '))
                 due = datetime.strptime(input('만료 날짜 (yyyy-mm-dd): '), '%Y-%m-%d').date()
                 code = schedule_view_model.update(self.id, repeat=Repeat(day=day, week_interval=week_interval, due=due))
 
-        if choice == 5:
+        elif choice == 5:
             remove_importance = False
             if obj.importance:
                 print('기존 중요도가 있습니다.')
@@ -140,11 +141,6 @@ class ScheduleDetailView:
 
 
 if __name__ == '__main__':
-    # schedule_view_model.create(from_time=datetime.now(),
-    #                                   to_time=datetime.now() + timedelta(days=1),
-    #                                   name='오더스 프로토타입 개발',
-    #                                   content='캘린더 디테일 뷰 구현')
-
     print(Schedule.objects.all())
 
     id = int(input('id: '))

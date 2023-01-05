@@ -1,8 +1,8 @@
-from model import Schedule
-from schedule_view_model import CalenderViewModel, InvalidScheduleError, StringEntry
 from datetime import date, datetime
-from schedule_view import ScheduleDetailView
-from TodoDetailView import TodoDetailView
+
+from todo_detail_view import TodoDetailView
+from schedule_detail_view import ScheduleDetailView
+from schedule_view_model import CalenderViewModel, InvalidScheduleError
 
 
 class CalenderView:
@@ -11,7 +11,7 @@ class CalenderView:
 
     def load(self):
         while True:
-            c = input("1: view calendar 2: create calendar 3: exit")
+            c = input("1: view calendar 2: create calendar 3: exit\n>>> ")
             if c == '1':
                 try:
                     from_date = datetime.strptime(input("from time: "), "%Y-%m-%d %H:%M").date()
@@ -24,9 +24,6 @@ class CalenderView:
                 self.create_schedule()
             elif c == '3':
                 break
-            else:
-                continue
-
 
     def create_schedule(self):
         name = input("name: ")
@@ -47,7 +44,8 @@ class CalenderView:
         content = input("content: ")
 
         try:
-            self.viewmodel.create_schedule(name=name, from_str=from_str, to_str=to_str, repeat=repeat, repeat_day=repeat_day, interval=interval, due=due,
+            self.viewmodel.create_schedule(name=name, from_str=from_str, to_str=to_str, repeat=repeat,
+                                           repeat_day=repeat_day, interval=interval, due=due,
                                            importance=importance, content=content)
             print("Successfully created: {0}".format(name))
         except InvalidScheduleError:

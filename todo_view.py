@@ -1,10 +1,11 @@
 from datetime import datetime
-from todo_view_model import TodoViewModel
-from model import Repeat
-from constants import *
-from TodoDetailView import TodoDetailView
 
-day_str = ['월', '화', '수', '목', '금', '토', '일']
+from todo_detail_view import TodoDetailView
+from constants import *
+from model import Repeat
+from todo_view_model import TodoViewModel
+
+DAY_STR = ('월', '화', '수', '목', '금', '토', '일')
 
 
 class TodoListView:
@@ -37,14 +38,14 @@ class TodoListView:
             try:
                 progress = int(input('진행도: '))
                 self.printlist(progress=progress)
-            except:
+            except ValueError:
                 print("정수를 입력하세요.")
 
         if choice == 4:
             try:
                 importance = int(input('중요도: '))
                 self.printlist(importance=importance)
-            except:
+            except ValueError:
                 print("정수를 입력하세요.")
 
         if choice == 5:
@@ -65,8 +66,8 @@ class TodoListView:
             print(f'완료 여부: {obj.done}')
             print(f'진행도: {obj.progress}')
             print(f'중요도: {obj.importance}')
-            if obj.repeat is not None:
-                print(f'반복 날짜: {",".join(day for i, day in enumerate(day_str) if 1 << i & obj.repeat.day)}')
+            if obj.repeat:
+                print(f'반복 날짜: {",".join(day for i, day in enumerate(DAY_STR) if 1 << i & obj.repeat.day)}')
                 print(f'반복 주기(주): {obj.repeat.week_interval}')
                 print(f'만료 날짜: {obj.repeat.due.strftime("%Y-%m-%d")}')
             print(f'내용: {obj.content}')
@@ -82,7 +83,6 @@ class TodoListView:
             TodoDetailView(id).load()
             print()
 
-
     def create(self):
         try:
             date = datetime.strptime(input('날짜 (yyyy-mm-dd): '), '%Y-%m-%d').date()
@@ -95,33 +95,34 @@ class TodoListView:
         repeat = None
         if has_repeat == 'True':
             try:
-                day = sum(1 << day_str.index(d) for d in input('요일 (콤마로 구분): ').split(','))
+                day = sum(1 << DAY_STR.index(d) for d in input('요일 (콤마로 구분): ').split(','))
             except ValueError:
                 print('잘못된 형식입니다.')
                 return
             try:
                 week_interval = int(input('반복 간격 (주): '))
-            except:
+            except ValueError:
                 print("정수를 입력하세요.")
                 return
             try:
                 due = datetime.strptime(input('만료 날짜 (yyyy-mm-dd): '), '%Y-%m-%d').date()
-            except:
+            except ValueError:
                 print('잘못된 형식입니다.')
                 return
             repeat = Repeat(day=day, week_interval=week_interval, due=due)
 
         try:
             progress = int(input('진행도: '))
-        except:
+        except ValueError:
             print("정수를 입력하세요.")
             return
         try:
             importance = int(input('중요도: '))
-        except:
+        except ValueError:
             print("정수를 입력하세요.")
             return
-        v = self.viewmodel.create(date, name, content, repeat=repeat, done=False, progress=progress, importance=importance)
+        v = self.viewmodel.create(date, name, content, repeat=repeat,
+                                  done=False, progress=progress, importance=importance)
         if v == CODE_INVALID_DATE:
             print('날짜가 잘못되었습니다.')
         elif v == CODE_INVALID_PROGRESS:
