@@ -37,7 +37,10 @@ class TodoDetailView:
                         if place == 0:
                             print("취소되었습니다.")
                             # actionSelectIsOK = True
-                        elif not place == 3:
+                        elif place == 3:
+                            editIsOK = viewModel.update(self.id, place, "")
+                            print("변경되었습니다")
+                        elif place <= 7:
                             content = input("내용을 입력하세요:")
                             editIsOK = viewModel.update(self.id, place, content)
                             if editIsOK:
@@ -46,6 +49,8 @@ class TodoDetailView:
                                 # actionSelectIsOK = True
                             else:
                                 print("다시 입력해주세요")
+                        else:
+                            print("다시 입력해주세요")
                 elif button == "2":
                     del viewModel
                     actionSelectIsOK = True
