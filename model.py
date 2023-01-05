@@ -138,8 +138,9 @@ class TodoManager(Manager):
             self.connection.commit()
 
     def update(self, id, obj=None, **kwargs) -> None:
+        origin = self.get(id)
         if not obj:
-            obj = self.get(id)
+            obj = origin
 
         val_name = obj.name
         val_done = obj.done
@@ -203,7 +204,8 @@ class TodoManager(Manager):
             """)
             self.connection.commit()
 
-    def delete(self, id) -> None:
+    def delete(self, id) -> 'Todo':
+        origin = self.get(id)
         self.cursor.execute(f"""
         DELETE FROM TodoRepeats WHERE TodoID={id}
         """)
@@ -211,6 +213,7 @@ class TodoManager(Manager):
         DELETE FROM Todos WHERE TodoID={id}
         """)
         self.connection.commit()
+        return origin
 
 
 class ScheduleManager(Manager):
@@ -324,8 +327,9 @@ class ScheduleManager(Manager):
             self.connection.commit()
 
     def update(self, id, obj=None, **kwargs) -> None:
+        origin = self.get(id)
         if not obj:
-            obj = self.get(id)
+            obj = origin
 
         val_name = obj.name
         val_from_time = obj.from_time
@@ -384,7 +388,8 @@ class ScheduleManager(Manager):
                     """)
             self.connection.commit()
 
-    def delete(self, id) -> None:
+    def delete(self, id) -> 'Schedule':
+        origin = self.get(id)
         self.cursor.execute(f"""
         DELETE FROM Schedules WHERE ScheduleID={id}
         """)
@@ -392,6 +397,7 @@ class ScheduleManager(Manager):
         DELETE FROM ScheduleRepeats WHERE ScheduleID={id}
         """)
         self.connection.commit()
+        return origin
 
 
 @dataclass
