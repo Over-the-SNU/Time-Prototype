@@ -1,13 +1,19 @@
+import dataclasses
 import copy
-
 from constants import *
 from model import *
 import datetime
 from model import Schedule
 
 
-def validate(obj: Schedule):
-    if obj.from_time > obj.to_time:
+def validate(**kwargs):
+    kwargs['id'] = 0
+    try:
+        obj = Schedule(**kwargs)
+    except (ValueError, TypeError):
+        return CODE_INVALID_ARGUMENTS
+
+    if obj.from_time > obj.to_time or obj.to_time > obj.repeat.due:
         return CODE_INVALID_DATE
 
     if not obj.name:
@@ -23,45 +29,41 @@ def validate(obj: Schedule):
 
 
 def create(**kwargs):
-    id = 0  # TODO: should ViewModel assign id?
-
-    try:
-        obj = Schedule(id=id, **kwargs)
-    except TypeError:
-        return CODE_INVALID_ARGUMENTS  # mismatched types or missing required field
-
-    code = validate(obj)
+    code = validate(**kwargs)
 
     if code == CODE_SUCCESS:
-        Schedule.objects.create(obj)
+        Schedule.objects.create(**kwargs)
 
     return code
 
 
 def get_detail(id: int):
-    obj = Schedule.objects.get(id)
-    # TODO: handle when id does not exist
+    try:
+        obj = Schedule.objects.get(id)
+    except ValueError:
+        return None
     return obj
 
 
 def update(id: int, **kwargs):
-    obj = Schedule.objects.get(id)
-    # TODO: handle when id does not exist
+    try:
+        obj = Schedule.objects.get(id)
+    except ValueError:
+        return CODE_ID_NOT_FOUND
 
-    for attr, value in kwargs.items():
-        setattr(obj, attr, value)
-
-    code = validate(obj)
+    code = validate(**(dataclasses.asdict(obj) | kwargs))
 
     if code == CODE_SUCCESS:
-        Schedule.objects.update(id, obj)
+        Schedule.objects.update(id, **kwargs)
 
     return code
 
 
 def delete(id: int, **kwargs):
-    obj = Schedule.objects.delete(id)
-    # TODO: handle when id does not exist
+    try:
+        Schedule.objects.delete(id)
+    except ValueError:
+        return CODE_ID_NOT_FOUND
     return CODE_SUCCESS
 
 
