@@ -1,5 +1,5 @@
-from datetime import date
-from model import Todo
+import datetime
+from model import Todo, Repeat
 
 class TodoViewModel:
     def __init__(self):# name, importance, done, progress, dueDate, repeat, content):
@@ -41,17 +41,20 @@ class TodoViewModel:
                 return False
         elif place == 5:
             try:
-                obj.date = date(content)
+                obj.date = datetime.strptime().date(content)
                 Todo.objects.update(id, obj)
                 return True
             except ValueError:
                 return False
         elif place == 6:
-            if isinstance(content, str):
-                obj.repeat = content
+            try:
+                day = int(content[0])
+                week_interval = int(content[1])
+                due = datetime.strptime().date(content[2])
+                obj.repeat = Repeat(day, week_interval, due)
                 Todo.objects.update(id, obj)
                 return True
-            else:
+            except ValueError:
                 return False
         elif place == 7:
             obj.content = content

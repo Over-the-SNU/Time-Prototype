@@ -40,6 +40,15 @@ class TodoDetailView:
                         elif place == 3:
                             editIsOK = viewModel.update(self.id, place, "")
                             print("변경되었습니다")
+                        elif place == 6:
+                            day = input("반복할 요일을 입력하세요:")
+                            week_interval = input("몇 주를 주기로 반복할 지 입력하세요:")
+                            due = input("반복을 마칠 날짜를 입력하세요:")
+                            editIsOK = viewModel.update(self.id, place, [day, week_interval, due])
+                            if editIsOK:
+                                print("완료됐습니다")
+                            else:
+                                print("다시 입력해주세요")
                         elif place <= 7:
                             content = input("내용을 입력하세요:")
                             editIsOK = viewModel.update(self.id, place, content)
