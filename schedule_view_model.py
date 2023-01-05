@@ -81,9 +81,13 @@ class CalenderViewModel:
 
     def create_schedule(self, **kwargs):
         if self.is_valid(**kwargs):
-            raise InvalidScheduleError
+            from_time = datetime.datetime.strptime(kwargs['from_str'], "%Y-%m-%d %H:%M:%S")
+            to_time = datetime.datetime.strptime(kwargs['to_str'], "%Y-%m-%d %H:%M:%S")
+            repeat = Repeat(int(kwargs['repeat_day'], 2), int(kwargs['interval']), datetime.datetime.strptime(kwargs['due'], "%Y-%m-%d").date())
+            Schedule.objects.create(Schedule(id=0, name=kwargs['name'],from_time=from_time, to_time=to_time, repeat=repeat,
+                                             importance=kwargs['importance'], content=kwargs['content']))
         else:
-            Schedule.objects.create(Schedule(**kwargs))
+            raise InvalidScheduleError
 
     def is_valid(self, **kwargs):
         try:
@@ -93,16 +97,19 @@ class CalenderViewModel:
             to_time = datetime.datetime.strptime(kwargs['to_str'], "%Y-%m-%d %H:%M:%S")
             if from_time > to_time:
                 return False
-            interval = int(kwargs['interval'])
-            if interval < 0:
+            repeat_day = int(kwargs['repeat_day'], 2)
+            if repeat_day < 0b0000001 or repeat_day > 0b1000000:
                 return False
-            due = datetime.datetime.strptime(kwargs['from_str'], "%Y-%m-%d").date()
-            if due < to_time:
+            interval = int(kwargs['interval'])
+            if interval <= 0:
+                return False
+            due = datetime.datetime.strptime(kwargs['due'], "%Y-%m-%d").date()
+            if due < to_time.date():
                 return False
             importance = int(kwargs['importance'])
             if importance < 0:
                 return False
-
+            return True
         except ValueError:
             return False
 
@@ -114,10 +121,26 @@ class CalenderViewModel:
                 if schedule.repeat is None:
                     ret.append(StringEntry(schedule.from_time.date(), self.scheduleToStr(schedule)))
                 else:
-                    while schedule.from_time.date() <= to_date and schedule.from_time.date() <= schedule.repeat.due:
-                        ret.append(StringEntry(schedule.from_time.date(), self.scheduleToStr(schedule)))
-                        schedule.from_time = schedule.from_time + datetime.timedelta(days=7)
-                        schedule.to_time = schedule.to_time + datetime.timedelta(days=7)
+                    ret.append(StringEntry(schedule.from_time.date(), self.scheduleToStr(schedule)))
+
+                    diff = 0 - schedule.from_time.weekday()
+                    ls = []
+                    b = 0b0000001
+                    while b<=0b1000000:
+                        if schedule.repeat.day & b != 0:
+                            s = copy.deepcopy(schedule)
+                            s.from_time = s.from_time + datetime.timedelta(days=diff)
+                            s.to_time = s.to_time + datetime.timedelta(days=diff)
+                            ls.append(s)
+                        b=b<<1
+                        diff += 1
+                    for sc in ls:
+                        while sc.from_time.date() <= schedule.repeat.due and sc.from_time.date() <= to_date:
+                            if sc.from_time.date() >= from_date and sc.from_time.date() >= schedule.from_time.date():
+                                ret.append(StringEntry(sc.from_time.date(), self.scheduleToStr(sc)))
+                            sc.from_time = sc.from_time + datetime.timedelta(days=7*schedule.repeat.week_interval)
+                            sc.to_time = sc.to_time + datetime.timedelta(days=7*schedule.repeat.week_interval)
+
         return ret
 
     def get_todos(self, from_date: date, to_date: date):

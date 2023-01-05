@@ -28,15 +28,16 @@ class CalenderView:
 
     def create_schedule(self):
         name = input("name: ")
-        from_str = input("from time: ")
-        to_str = input("to time: ")
-        interval = input("repeat interval: ")
-        due = input("repeat due: ")
+        from_str = input("from time(YYYY-mm-dd HH:MM:SS): ")
+        to_str = input("to time(YYYY-mm-dd HH:MM:SS): ")
+        repeat_day = input("repeat day(in binary, from sun~mon): ")
+        interval = input("repeat interval(week): ")
+        due = input("repeat due(YYYY-mm-dd): ")
         importance = input("importance: ")
         content = input("content: ")
 
         try:
-            self.viewmodel.create_schedule(name=name, from_str=from_str, to_str=to_str, interval=interval, due=due,
+            self.viewmodel.create_schedule(name=name, from_str=from_str, to_str=to_str, repeat_day=repeat_day, interval=interval, due=due,
                                            importance=importance, content=content)
             print("Successfully created: {0}".format(name))
         except InvalidScheduleError:
@@ -50,3 +51,6 @@ class CalenderView:
             print(entry.string)
 
 
+if __name__ == '__main__':
+    view = CalenderView()
+    view.load()
