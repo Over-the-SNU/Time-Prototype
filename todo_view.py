@@ -2,6 +2,7 @@ from datetime import datetime
 from todo_view_model import TodoViewModel
 from model import Repeat
 from constants import *
+from TodoDetailView import TodoDetailView
 
 day_str = ['월', '화', '수', '목', '금', '토', '일']
 
@@ -59,6 +60,7 @@ class TodoListView:
 
     def printlist(self, **kwargs):
         for obj in self.viewmodel.get_list(**kwargs):
+            print(f'날짜: {obj.date.strftime("%Y-%m-%d")}')
             print(f'제목: {obj.name}')
             print(f'완료 여부: {obj.done}')
             print(f'진행도: {obj.progress}')
@@ -68,6 +70,17 @@ class TodoListView:
                 print(f'반복 주기(주): {obj.repeat.week_interval}')
                 print(f'만료 날짜: {obj.repeat.due.strftime("%Y-%m-%d")}')
             print(f'내용: {obj.content}')
+            print()
+
+        while True:
+            print('TODO 상세보기: {id}')
+            print('종료: 엔터')
+            s = input('>>> ')
+            if not s:
+                break
+            id = int(s)
+            TodoDetailView(id).load()
+            print()
 
 
     def create(self):
@@ -135,5 +148,6 @@ class TodoListView:
                 break
 
 
-todo = TodoListView()
-todo.load()
+if __name__ == '__main__':
+    todo = TodoListView()
+    todo.load()

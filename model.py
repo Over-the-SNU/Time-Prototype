@@ -117,16 +117,18 @@ class TodoManager(Manager):
             val_importance = 0 if "importance" not in kwargs else kwargs["importance"]
             val_content = "" if "content" not in kwargs else kwargs["content"]
             repeat = kwargs["repeat"] if "repeat" in kwargs else None
+            val_progress = 0 if "progress" not in kwargs else kwargs["progress"]
         else:
             val_name = obj.name
             val_date = obj.date
             val_importance = obj.importance
             val_content = obj.content
             repeat = obj.repeat
+            val_progress = obj.progress
 
         self.cursor.execute(f"""
-        INSERT INTO Todos(TodoName, TodoDate, Importance, Content)
-        VALUES ( '{val_name}', '{val_date.strftime("%Y-%m-%d")}', {val_importance}, '{val_content}' );
+        INSERT INTO Todos(TodoName, TodoDate, Progress, Importance, Content)
+        VALUES ( '{val_name}', '{val_date.strftime("%Y-%m-%d")}', {val_progress}, {val_importance}, '{val_content}' );
         """)
         self.connection.commit()
 

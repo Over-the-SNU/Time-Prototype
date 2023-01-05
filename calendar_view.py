@@ -1,6 +1,8 @@
 from model import Schedule
 from schedule_view_model import CalenderViewModel, InvalidScheduleError, StringEntry
 from datetime import date, datetime
+from schedule_view import ScheduleDetailView
+from TodoDetailView import TodoDetailView
 
 
 class CalenderView:
@@ -12,8 +14,8 @@ class CalenderView:
             c = input("1: view calendar 2: create calendar 3: exit")
             if c == '1':
                 try:
-                    from_date = datetime.strptime(input("from time: "), "%Y-%m-%d %H:%M:%S").date()
-                    to_date = datetime.strptime(input("to time: "), "%Y-%m-%d %H:%M:%S").date()
+                    from_date = datetime.strptime(input("from time: "), "%Y-%m-%d %H:%M").date()
+                    to_date = datetime.strptime(input("to time: "), "%Y-%m-%d %H:%M").date()
                     self.print_from_range(from_date, to_date)
                 except ValueError:
                     print("Invalid input")
@@ -57,6 +59,20 @@ class CalenderView:
         entries.sort(key=lambda x: x.date)
         for entry in entries:
             print(entry.string)
+
+        while True:
+            print('일정 상세보기: s{id}')
+            print('TODO 상세보기: t{id}')
+            print('종료: 엔터')
+            s = input('>>> ')
+            if not s:
+                break
+            t, id = s[0], int(s[1:])
+            if t == 's':
+                ScheduleDetailView(id).load()
+            if t == 't':
+                TodoDetailView(id).load()
+            print()
 
 
 if __name__ == '__main__':
