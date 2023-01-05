@@ -29,11 +29,11 @@ class Manager(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def create(self, obj):
+    def create(self, obj=None, **kwargs):
         pass
 
     @abstractmethod
-    def update(self, id, obj):
+    def update(self, id, obj=None, **kwargs):
         pass
 
     @abstractmethod
@@ -103,29 +103,77 @@ class TodoManager(Manager):
                     date=datetime.strptime(result[4], "%Y-%m-%d").date(),
                     repeat=r, importance=result[5], content=result[6])
 
-    def create(self, obj) -> None:
+    def create(self, obj=None, **kwargs) -> None:
+        if not obj:
+            if "name" not in kwargs:
+                raise ValueError("Missing essential field 'name'")
+            if "date" not in kwargs:
+                raise ValueError("Missing essential field 'date'")
+            if not isinstance(kwargs["date"], date):
+                raise ValueError(f"Invalid type for field 'date' (Expected='date', Got={type(kwargs['date'])}")
+
+            val_name = kwargs["name"]
+            val_date = kwargs["date"]
+            val_importance = 0 if "importance" not in kwargs else kwargs["importance"]
+            val_content = "" if "content" not in kwargs else kwargs["content"]
+            repeat = kwargs["repeat"] if "repeat" in kwargs else None
+        else:
+            val_name = obj.name
+            val_date = obj.date
+            val_importance = obj.importance
+            val_content = obj.content
+            repeat = obj.repeat
+
         self.cursor.execute(f"""
         INSERT INTO Todos(TodoName, TodoDate, Importance, Content)
-        VALUES ( '{obj.name}', '{obj.date.strftime("%Y-%m-%d")}', {obj.importance}, '{obj.content}' );
+        VALUES ( '{val_name}', '{val_date.strftime("%Y-%m-%d")}', {val_importance}, '{val_content}' );
         """)
         self.connection.commit()
 
-        if obj.repeat:
+        if repeat:
             id = self.cursor.execute("SELECT last_insert_rowid()").fetchone()
             self.cursor.execute(f"""
             INSERT INTO TodoRepeats
-            VALUES ( {id[0]}, {obj.repeat.day}, {obj.repeat.week_interval}, '{obj.repeat.due.strftime("%Y-%m-%d")}' );
+            VALUES ( {id[0]}, {repeat.day}, {repeat.week_interval}, '{repeat.due.strftime("%Y-%m-%d")}' );
             """)
             self.connection.commit()
 
-    def update(self, id, obj) -> None:
+    def update(self, id, obj=None, **kwargs) -> None:
+        origin = self.get(id)
+        if not obj:
+            obj = origin
+
+        val_name = obj.name
+        val_done = obj.done
+        val_progress = obj.progress
+        val_date = obj.date
+        val_importance = obj.importance
+        val_content = obj.content
+
+        if "name" in kwargs:
+            val_name = kwargs["name"]
+        if "done" in kwargs:
+            val_done = kwargs["done"]
+        if "progress" in kwargs:
+            val_progress = kwargs["progress"]
+        if "date" in kwargs:
+            val_date = kwargs["date"]
+        if "importance" in kwargs:
+            val_importance = kwargs["importance"]
+        if "content" in kwargs:
+            val_content = kwargs
+
+        repeat = obj.repeat
+        if "repeat" in kwargs:
+            repeat = kwargs["repeat"]
+
         self.cursor.execute(f"""
         UPDATE Todos
-        SET TodoName='{obj.name}', Done={1 if obj.done else 0},
-        Progress={obj.progress},
-        TodoDate='{obj.date.strftime("%Y-%m-%d")}',
-        Importance={obj.importance},
-        Content='{obj.content}'
+        SET TodoName='{val_name}', Done={1 if val_done else 0},
+        Progress={val_progress},
+        TodoDate='{val_date.strftime("%Y-%m-%d")}',
+        Importance={val_importance},
+        Content='{val_content}'
         WHERE TodoID = {id};
         """)
         self.connection.commit()
@@ -135,19 +183,19 @@ class TodoManager(Manager):
         WHERE TodoID={id};
         """).fetchone()
 
-        if obj.repeat:
+        if repeat:
             if r:
                 self.cursor.execute(f"""
                 UPDATE TodoRepeats
-                SET Days={obj.repeat.day},
-                WeekInterval={obj.repeat.week_interval},
-                DueDate='{obj.repeat.due.strftime("%Y-%m-%d")}'
+                SET Days={repeat.day},
+                WeekInterval={repeat.week_interval},
+                DueDate='{repeat.due.strftime("%Y-%m-%d")}'
                 WHERE TodoID={id}
                 """)
             else:
                 self.cursor.execute(f"""
                 INSERT INTO TodoRepeats
-                VALUES ( {id}, {obj.repeat.day}, {obj.repeat.week_interval}, '{obj.repeat.due.strftime("%Y-%m-%d")}' );
+                VALUES ( {id}, {repeat.day}, {repeat.week_interval}, '{repeat.due.strftime("%Y-%m-%d")}' );
                 """)
 
             self.connection.commit()
@@ -157,13 +205,16 @@ class TodoManager(Manager):
             """)
             self.connection.commit()
 
-    def delete(self, id) -> None:
+    def delete(self, id) -> 'Todo':
+        origin = self.get(id)
         self.cursor.execute(f"""
         DELETE FROM TodoRepeats WHERE TodoID={id}
         """)
         self.cursor.execute(f"""
         DELETE FROM Todos WHERE TodoID={id}
         """)
+        self.connection.commit()
+        return origin
 
 
 class ScheduleManager(Manager):
@@ -206,8 +257,8 @@ class ScheduleManager(Manager):
             r = Repeat(day=item[6], week_interval=item[7], due=datetime.strptime(item[8], "%Y-%m-%d").date()) if item[6] is not None else None
             ret.append(
                 Schedule(id=item[0], name=item[1], from_time=datetime.strptime(item[2], "%Y-%m-%d %H:%M:%S"),
-                              to_time=datetime.strptime(item[3], "%Y-%m-%d %H:%M:%S"), repeat=r, importance=item[4],
-                              content=item[5]))
+                         to_time=datetime.strptime(item[3], "%Y-%m-%d %H:%M:%S"), repeat=r, importance=item[4],
+                         content=item[5]))
         return ret
 
     def get(self, id) -> 'Schedule':
@@ -228,32 +279,83 @@ class ScheduleManager(Manager):
         r = Repeat(day=item[6], week_interval=item[7], due=datetime.strptime(item[8], "%Y-%m-%d").date()) if item[6] is not None else None
 
         return Schedule(id=item[0], name=item[1], from_time=datetime.strptime(item[2], "%Y-%m-%d %H:%M:%S"),
-                             to_time=datetime.strptime(item[3], "%Y-%m-%d %H:%M:%S"), repeat=r, importance=item[4],
-                             content=item[5])
+                        to_time=datetime.strptime(item[3], "%Y-%m-%d %H:%M:%S"), repeat=r, importance=item[4],
+                        content=item[5])
 
-    def create(self, obj) -> None:
+    def create(self, obj=None, **kwargs) -> None:
+
+        if not obj:
+            if "name" not in kwargs:
+                raise ValueError("Missing essential field 'name'")
+            if "from_time" not in kwargs:
+                raise ValueError("Missing essential field 'from_time'")
+            if not isinstance(kwargs["from_time"], datetime):
+                raise ValueError(
+                    f"Invalid type for field 'from_time' (Expected='datetime', Got={type(kwargs['from_time'])}")
+            if "to_time" not in kwargs:
+                raise ValueError("Missing essential field 'to_time'")
+            if not isinstance(kwargs["to_time"], datetime):
+                raise ValueError(
+                    f"Invalid type for field 'to_time' (Expected='datetime', Got={type(kwargs['to_time'])}")
+
+            val_name = kwargs["name"]
+            val_from_time = kwargs["from_time"]
+            val_to_time = kwargs["to_time"]
+            val_importance = 0 if "importance" not in kwargs else kwargs["importance"]
+            val_content = "" if "content" not in kwargs else kwargs["content"]
+            repeat = kwargs["repeat"] if "repeat" in kwargs else None
+        else:
+            val_name = obj.name
+            val_from_time = obj.from_time
+            val_to_time = obj.to_time
+            val_importance = obj.importance
+            val_content = obj.content
+            repeat = obj.repeat
+
         self.cursor.execute(f"""
         INSERT INTO Schedules(ScheduleName, FromTime, ToTime, Importance, Content)
-        VALUES ( '{obj.name}', '{obj.from_time.strftime("%Y-%m-%d %H:%M:%S")}', '{obj.to_time.strftime("%Y-%m-%d %H:%M:%S")}', {obj.importance}, '{obj.content}' );
+        VALUES ( '{val_name}', '{val_from_time.strftime("%Y-%m-%d %H:%M:%S")}',
+         '{val_to_time.strftime("%Y-%m-%d %H:%M:%S")}', {val_importance}, '{val_content}' );
         """)
         self.connection.commit()
 
-        if obj.repeat:
+        if repeat:
             id = self.cursor.execute("SELECT last_insert_rowid()").fetchone()
             self.cursor.execute(f"""
             INSERT INTO ScheduleRepeats
-            VALUES ( {id[0]}, {obj.repeat.day}, {obj.repeat.week_interval}, '{obj.repeat.due.strftime("%Y-%m-%d")}' );
+            VALUES ( {id[0]}, {repeat.day}, {repeat.week_interval}, '{repeat.due.strftime("%Y-%m-%d")}' );
             """)
             self.connection.commit()
 
-    def update(self, id, obj) -> None:
+    def update(self, id, obj=None, **kwargs) -> None:
+        origin = self.get(id)
+        if not obj:
+            obj = origin
+
+        val_name = obj.name
+        val_from_time = obj.from_time
+        val_to_time = obj.to_time
+        val_importance = obj.importance
+        val_content = obj.content
+
+        if "name" in kwargs:
+            val_name = kwargs["name"]
+        if "from_time" in kwargs:
+            val_from_time = kwargs["from_time"]
+        if "to_time" in kwargs:
+            val_to_time = kwargs["to_time"]
+        if "importance" in kwargs:
+            val_importance = kwargs["importance"]
+        if "content" in kwargs:
+            val_content = kwargs["content"]
+
         self.cursor.execute(f"""
                 UPDATE Schedules
-                SET ScheduleName='{obj.name}',
-                FromTime='{obj.from_time.strftime("%Y-%m-%d %H:%M:%S")}',
-                ToTime='{obj.to_time.strftime("%Y-%m-%d %H:%M:%S")}',
-                Importance={obj.importance},
-                Content='{obj.content}'
+                SET ScheduleName='{val_name}',
+                FromTime='{val_from_time.strftime("%Y-%m-%d %H:%M:%S")}',
+                ToTime='{val_to_time.strftime("%Y-%m-%d %H:%M:%S")}',
+                Importance={val_importance},
+                Content='{val_content}'
                 WHERE ScheduleID = {id};
                 """)
         self.connection.commit()
@@ -263,19 +365,21 @@ class ScheduleManager(Manager):
                 WHERE ScheduleID={id};
                 """).fetchone()
 
-        if obj.repeat:
+        repeat = kwargs["repeat"] if "repeat" in kwargs else obj.repeat
+
+        if repeat:
             if r:
                 self.cursor.execute(f"""
                         UPDATE ScheduleRepeats
-                        SET Days={obj.repeat.day},
-                        WeekInterval={obj.repeat.week_interval},
-                        DueDate='{obj.repeat.due.strftime("%Y-%m-%d")}'
+                        SET Days={repeat.day},
+                        WeekInterval={repeat.week_interval},
+                        DueDate='{repeat.due.strftime("%Y-%m-%d")}'
                         WHERE ScheduleID={id}
                         """)
             else:
                 self.cursor.execute(f"""
                         INSERT INTO ScheduleRepeats
-                        VALUES ( {id}, {obj.repeat.day}, {obj.repeat.week_interval}, '{obj.repeat.due.strftime("%Y-%m-%d")}' );
+                        VALUES ( {id}, {repeat.day}, {repeat.week_interval}, '{repeat.due.strftime("%Y-%m-%d")}' );
                         """)
 
             self.connection.commit()
@@ -285,7 +389,8 @@ class ScheduleManager(Manager):
                     """)
             self.connection.commit()
 
-    def delete(self, id) -> None:
+    def delete(self, id) -> 'Schedule':
+        origin = self.get(id)
         self.cursor.execute(f"""
         DELETE FROM Schedules WHERE ScheduleID={id}
         """)
@@ -293,6 +398,7 @@ class ScheduleManager(Manager):
         DELETE FROM ScheduleRepeats WHERE ScheduleID={id}
         """)
         self.connection.commit()
+        return origin
 
 
 @dataclass
