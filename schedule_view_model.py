@@ -21,7 +21,7 @@ def validate(obj: Schedule):
 
 
 def create(**kwargs):
-    id = 0  # TODO: should ViewModel assign id?
+    id = 0  # TODO
 
     try:
         obj = Schedule(id=id, **kwargs)
@@ -37,14 +37,18 @@ def create(**kwargs):
 
 
 def get_detail(id: int):
-    obj = Schedule.objects.get(id)
-    # TODO: handle when id does not exist
+    try:
+        obj = Schedule.objects.get(id)
+    except ValueError:
+        return None
     return obj
 
 
 def update(id: int, **kwargs):
-    obj = Schedule.objects.get(id)
-    # TODO: handle when id does not exist
+    try:
+        obj = Schedule.objects.get(id)
+    except ValueError:
+        return CODE_ID_NOT_FOUND
 
     for attr, value in kwargs.items():
         setattr(obj, attr, value)
@@ -57,9 +61,14 @@ def update(id: int, **kwargs):
     return code
 
 
-def delete(id: int, **kwargs):
-    obj = Schedule.objects.delete(id)
-    # TODO: handle when id does not exist
+def delete(id: int):
+    try:
+        Schedule.objects.get(id)
+    except ValueError:
+        return CODE_ID_NOT_FOUND
+
+    Schedule.objects.delete(id)
+
     return CODE_SUCCESS
 
 
