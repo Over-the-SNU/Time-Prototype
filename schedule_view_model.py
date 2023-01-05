@@ -1,3 +1,5 @@
+import copy
+
 from constants import *
 from model import *
 import datetime
@@ -67,6 +69,12 @@ class InvalidScheduleError(Exception):
     pass
 
 
+@dataclass
+class StringEntry:
+    date: date
+    string: str
+
+
 class CalenderViewModel:
     def __init__(self):
         pass
@@ -98,8 +106,37 @@ class CalenderViewModel:
         except:
             return False
 
-    def get_schedules(self, from_date, to_date):
-        pass
+    def get_schedules(self, from_date: date, to_date: date):
+        schedules = Schedule.objects.all()
+        ret = []
+        for schedule in schedules:
+            if from_date <= schedule.from_time.date() <= to_date:
+                if schedule.repeat is None:
+                    ret.append(StringEntry(schedule.from_time.date(), self.scheduleToStr(schedule)))
+                else:
+                    while schedule.from_time.date() <= to_date and schedule.from_time.date() <= schedule.repeat.due:
+                        ret.append(StringEntry(schedule.from_time.date(), self.scheduleToStr(schedule)))
+                        schedule.from_time = schedule.from_time + datetime.timedelta(days=7)
+                        schedule.to_time = schedule.to_time + datetime.timedelta(days=7)
+        return ret
 
-    def get_todos(self, from_date, to_date):
-        pass
+    def get_todos(self, from_date: date, to_date: date):
+        todos = Todo.objects.all()
+        ret = []
+        for todo in todos:
+            if from_date <= todo.date <= to_date:
+                if todo.repeat is None:
+                    ret.append(StringEntry(todo.date, self.todoToStr(todo)))
+                else:
+                    while todo.date <= todo.repeat.due and todo.date <= to_date:
+                        ret.append(StringEntry(todo.date, self.todoToStr(todo)))
+                        todo.date = todo.date + datetime.timedelta(days=7)
+        return ret
+
+    def scheduleToStr(self, task):
+        return "[Schedule] id={0}, name={1}, {2}~{3}".format(task.id, task.name,
+                                                             task.from_time.strftime("%Y-%m-%d %H:%M:%S"),
+                                                             task.to_time.strftime("%Y-%m-%d %H:%M:%S"))
+
+    def todoToStr(self, task):
+        return "[Todo] id={0} name={1}, {2}".format(task.id, task.name, task.date.strftime("%Y-%m-%d"))
