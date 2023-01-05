@@ -116,11 +116,13 @@ class TodoManager(Manager):
             val_date = kwargs["date"]
             val_importance = 0 if "importance" not in kwargs else kwargs["importance"]
             val_content = "" if "content" not in kwargs else kwargs["content"]
+            repeat = kwargs["repeat"] if "repeat" in kwargs else None
         else:
             val_name = obj.name
             val_date = obj.date
             val_importance = obj.importance
             val_content = obj.content
+            repeat = obj.repeat
 
         self.cursor.execute(f"""
         INSERT INTO Todos(TodoName, TodoDate, Importance, Content)
@@ -128,7 +130,6 @@ class TodoManager(Manager):
         """)
         self.connection.commit()
 
-        repeat = kwargs["repeat"] if "repeat" in kwargs else obj.repeat
         if repeat:
             id = self.cursor.execute("SELECT last_insert_rowid()").fetchone()
             self.cursor.execute(f"""
@@ -302,14 +303,14 @@ class ScheduleManager(Manager):
             val_to_time = kwargs["to_time"]
             val_importance = 0 if "importance" not in kwargs else kwargs["importance"]
             val_content = "" if "content" not in kwargs else kwargs["content"]
+            repeat = kwargs["repeat"] if "repeat" in kwargs else None
         else:
             val_name = obj.name
             val_from_time = obj.from_time
             val_to_time = obj.to_time
             val_importance = obj.importance
             val_content = obj.content
-
-        repeat = kwargs["repeat"] if "repeat" in kwargs else obj.repeat
+            repeat = obj.repeat
 
         self.cursor.execute(f"""
         INSERT INTO Schedules(ScheduleName, FromTime, ToTime, Importance, Content)
